@@ -1,0 +1,1778 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Angket Kepercayaan Diri dalam Belajar Mahasiswa</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #f8fafc;
+      background-image:
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.09) 0px, transparent 48%),
+        radial-gradient(at 100% 10%, rgba(168, 85, 247, 0.08) 0px, transparent 45%),
+        radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.06) 0px, transparent 50%);
+      background-attachment: fixed;
+    }
+
+    /* Pola geometris halus pada hero */
+    .hero-pattern {
+      background-image: radial-gradient(rgba(255, 255, 255, 0.16) 1px, transparent 1px);
+      background-size: 18px 18px;
+    }
+
+    /* Custom Radio Card Styling */
+    .likert-option input[type="radio"]:checked + .likert-box {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      border-color: #4f46e5;
+      color: #ffffff;
+      box-shadow: 0 8px 18px -4px rgba(79, 70, 229, 0.42);
+      transform: translateY(-2px) scale(1.01);
+    }
+    .likert-option input[type="radio"]:checked + .likert-box .likert-sub {
+      color: rgba(255, 255, 255, 0.9);
+    }
+    .likert-option input[type="radio"]:focus-visible + .likert-box {
+      outline: 2px solid #6366f1;
+      outline-offset: 2px;
+    }
+    .likert-box {
+      transition: all 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .likert-option:hover .likert-box {
+      transform: translateY(-1px);
+    }
+
+    /* Kartu soal saat sudah terjawab */
+    .question-answered {
+      border-color: #a7f3d0 !important;
+      background: linear-gradient(to bottom right, #ffffff, #ecfdf5 160%);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+      animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes popBadge {
+      0% { transform: scale(0.6); opacity: 0; }
+      70% { transform: scale(1.12); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-pop {
+      animation: popBadge 0.28s ease-out forwards;
+    }
+  </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col">
+
+  <!-- Canvas Konfeti Selebrasi -->
+  <canvas id="confetti-canvas" class="fixed inset-0 pointer-events-none z-50 hidden"></canvas>
+
+  <!-- Top Navigation & Mode Switcher -->
+  <header class="bg-white/85 backdrop-blur-md border-b border-indigo-100/80 sticky top-0 z-30 shadow-xs">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white flex items-center justify-center font-bold shadow-md shadow-indigo-200">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+        </div>
+        <div>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-600 block">Instrumen Penelitian Akademik</span>
+          <h1 class="text-sm sm:text-base font-extrabold text-slate-900 leading-tight">Angket Kepercayaan Diri Mahasiswa</h1>
+        </div>
+      </div>
+
+      <!-- Tab Buttons -->
+      <nav class="flex bg-slate-100/90 p-1 rounded-xl border border-slate-200/80">
+        <button id="tab-form-btn" type="button" onclick="switchTab('form')"
+          class="px-3.5 py-1.5 text-xs sm:text-sm font-bold rounded-lg bg-white text-indigo-700 shadow-xs transition">
+          Isi Angket
+        </button>
+        <button id="tab-rekap-btn" type="button" onclick="switchTab('rekap')"
+          class="px-3.5 py-1.5 text-xs sm:text-sm font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5">
+          <span>Rekap Peneliti 🔒</span>
+          <span id="badge-count" class="bg-indigo-100 text-indigo-800 text-xs font-extrabold px-2 py-0.5 rounded-full">0</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Sticky Progress Bar Interaktif dengan Pesan Motivasi -->
+    <div id="progress-container" class="bg-gradient-to-r from-indigo-50/90 via-white/95 to-purple-50/90 border-t border-indigo-100/70 px-4 sm:px-6 py-2.5">
+      <div class="max-w-4xl mx-auto space-y-1.5">
+        <div class="flex items-center justify-between gap-2 text-xs">
+          <span id="progress-motivation" class="font-bold text-indigo-700 flex items-center gap-1.5">
+            <span>✨</span>
+            <span>Yuk mulai! Jawab sesuai kondisi diri Anda yang sebenarnya.</span>
+          </span>
+          <span id="progress-text" class="font-extrabold text-slate-700 bg-white px-2.5 py-0.5 rounded-full border border-indigo-100 shadow-2xs whitespace-nowrap">
+            0 / 20 (0%)
+          </span>
+        </div>
+        <div class="w-full bg-slate-200/80 rounded-full h-2.5 overflow-hidden p-0.5">
+          <div id="progress-bar" class="bg-gradient-to-r from-indigo-600 via-violet-600 to-emerald-500 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8">
+
+    <!-- Custom Notification Banner (Pengganti alert) -->
+    <div id="toast-box" class="hidden fixed bottom-5 right-5 z-50 max-w-sm bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-2xl border border-slate-700 flex items-start gap-3 animate-fade-in">
+      <div id="toast-icon" class="mt-0.5 text-emerald-400">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+        </svg>
+      </div>
+      <div class="text-sm font-medium leading-snug" id="toast-message">Pesan notifikasi</div>
+    </div>
+
+    <!-- ==================== VIEW 1: FORMULIR ANGKET ==================== -->
+    <section id="view-form" class="space-y-6 animate-fade-in">
+
+      <!-- Hero Banner Menarik dengan Ilustrasi SVG -->
+      <div class="rounded-3xl shadow-lg shadow-indigo-950/5 overflow-hidden border border-indigo-200/60 bg-white">
+        <div class="bg-gradient-to-br from-indigo-700 via-violet-700 to-purple-800 hero-pattern p-6 sm:p-8 text-white relative overflow-hidden">
+          <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="space-y-3 text-center md:text-left flex-1">
+              <div class="inline-flex flex-wrap items-center justify-center md:justify-start gap-2">
+                <span class="bg-white/15 backdrop-blur-md border border-white/20 text-white text-xs font-bold px-3 py-1 rounded-full">
+                  📋 20 Pernyataan
+                </span>
+                <span class="bg-white/15 backdrop-blur-md border border-white/20 text-white text-xs font-bold px-3 py-1 rounded-full">
+                  ⏱️ ±3 Menit
+                </span>
+                <span class="bg-emerald-400/20 backdrop-blur-md border border-emerald-300/30 text-emerald-100 text-xs font-bold px-3 py-1 rounded-full">
+                  🛡️ Rahasia & Aman
+                </span>
+              </div>
+
+              <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight leading-snug">
+                Angket Kepercayaan Diri dalam Belajar Mahasiswa
+              </h2>
+              <p class="text-indigo-100 text-sm sm:text-base leading-relaxed max-w-xl">
+                Kenali potensi dan tingkat kepercayaan diri akademikmu! Jawabanmu sangat berharga untuk pengembangan pembelajaran di perguruan tinggi.
+              </p>
+              <p class="text-[11px] text-indigo-200/90 font-medium">
+                Diadaptasi dari Skripsi Hana Nurfiani, 2015
+              </p>
+            </div>
+
+            <!-- Ilustrasi Vektor SVG Mahasiswa Semangat Belajar -->
+            <div class="shrink-0 w-36 h-36 sm:w-44 sm:h-44 bg-white/10 backdrop-blur-sm rounded-3xl border border-white/20 p-3 flex items-center justify-center shadow-inner">
+              <svg viewBox="0 0 200 200" class="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="100" cy="100" r="82" fill="url(#glowGrad)" opacity="0.35"/>
+                <!-- Buku Terbuka -->
+                <path d="M42 136C42 131 46 127 51 127H96V162H51C46 162 42 158 42 153V136Z" fill="#EEF2FF"/>
+                <path d="M158 136C158 131 154 127 149 127H104V162H149C154 162 158 158 158 153V136Z" fill="#E0E7FF"/>
+                <path d="M96 127H104V162H96V127Z" fill="#818CF8"/>
+                <!-- Karakter Mahasiswa Percaya Diri -->
+                <circle cx="100" cy="78" r="24" fill="#FDE68A"/>
+                <!-- Topi Toga -->
+                <path d="M62 60L100 44L138 60L100 74L62 60Z" fill="#1E1B4B"/>
+                <path d="M78 66V76C78 81 88 85 100 85C112 85 122 81 122 76V66" fill="#312E81"/>
+                <path d="M134 61V80" stroke="#FBBF24" stroke-width="3" stroke-linecap="round"/>
+                <circle cx="134" cy="82" r="3" fill="#FBBF24"/>
+                <!-- Ekspresi Senyum & Mata -->
+                <circle cx="92" cy="78" r="2.5" fill="#1E293B"/>
+                <circle cx="108" cy="78" r="2.5" fill="#1E293B"/>
+                <path d="M93 86C95.5 89.5 104.5 89.5 107 86" stroke="#1E293B" stroke-width="2.5" stroke-linecap="round"/>
+                <!-- Badan / Almamater -->
+                <path d="M66 127C66 111 81 102 100 102C119 102 134 111 134 127H66Z" fill="#34D399"/>
+                <!-- Bintang Apresiasi -->
+                <path d="M36 52L38.5 58.5L45 61L38.5 63.5L36 70L33.5 63.5L27 61L33.5 58.5L36 52Z" fill="#FCD34D"/>
+                <path d="M164 46L166 51L171 53L166 55L164 60L162 55L157 53L162 51L164 46Z" fill="#6EE7B7"/>
+                <circle cx="166" cy="104" r="4" fill="#FBBF24"/>
+                <circle cx="34" cy="108" r="3.5" fill="#A5B4FC"/>
+                <defs>
+                  <radialGradient id="glowGrad" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(100 100) scale(82)">
+                    <stop stop-color="#FFFFFF"/>
+                    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+                  </radialGradient>
+                </defs>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Info Jaminan Nilai & Petunjuk Skala Likert Interaktif -->
+        <div class="p-6 sm:p-8 space-y-5">
+          <div class="bg-amber-50/90 border border-amber-200/90 text-amber-950 rounded-2xl p-4 flex items-start gap-3">
+            <div class="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0 mt-0.5">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+            </div>
+            <p class="text-sm leading-relaxed">
+              Pengisian angket di bawah ini <strong>tidak akan mempengaruhi nilai mata kuliah Anda</strong>. Jawablah secara jujur, teliti, dan santai sesuai kondisi yang Anda alami sehari-hari!
+            </p>
+          </div>
+
+          <!-- Petunjuk Pengisian -->
+          <div>
+            <h3 class="text-xs font-extrabold text-indigo-900 uppercase tracking-wider mb-2">Petunjuk Pilihan Jawaban</h3>
+            <p class="text-sm text-slate-600 mb-3.5">
+              Klik salah satu dari 5 pilihan skala berikut pada setiap pernyataan yang paling menggambarkan diri Anda:
+            </p>
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5 text-xs">
+              <div class="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-3 text-center transition hover:-translate-y-0.5">
+                <span class="text-base block mb-0.5">🌟</span>
+                <span class="block font-extrabold text-emerald-800 text-sm">SS</span>
+                <span class="text-emerald-900/80 font-medium">Sangat Setuju</span>
+              </div>
+              <div class="bg-indigo-50/70 border border-indigo-200/80 rounded-2xl p-3 text-center transition hover:-translate-y-0.5">
+                <span class="text-base block mb-0.5">👍</span>
+                <span class="block font-extrabold text-indigo-800 text-sm">S</span>
+                <span class="text-indigo-900/80 font-medium">Setuju</span>
+              </div>
+              <div class="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-3 text-center transition hover:-translate-y-0.5">
+                <span class="text-base block mb-0.5">🤔</span>
+                <span class="block font-extrabold text-amber-800 text-sm">RR</span>
+                <span class="text-amber-900/80 font-medium">Ragu-Ragu</span>
+              </div>
+              <div class="bg-orange-50/70 border border-orange-200/80 rounded-2xl p-3 text-center transition hover:-translate-y-0.5">
+                <span class="text-base block mb-0.5">👎</span>
+                <span class="block font-extrabold text-orange-800 text-sm">TS</span>
+                <span class="text-orange-900/80 font-medium">Tidak Setuju</span>
+              </div>
+              <div class="bg-rose-50/70 border border-rose-200/80 rounded-2xl p-3 text-center col-span-2 sm:col-span-1 transition hover:-translate-y-0.5">
+                <span class="text-base block mb-0.5">🙅</span>
+                <span class="block font-extrabold text-rose-800 text-sm">STS</span>
+                <span class="text-rose-900/80 font-medium">Sangat Tidak Setuju</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Utama -->
+      <form id="survey-form" novalidate class="space-y-6">
+        <!-- Card Identitas Responden dengan Sapaan Personal Dinamis -->
+        <div class="bg-white rounded-3xl shadow-sm border border-indigo-100 p-6 sm:p-8 relative overflow-hidden">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-5">
+            <div class="flex items-center gap-2.5">
+              <span class="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm">👤</span>
+              <h3 class="text-base sm:text-lg font-extrabold text-slate-900">Identitas Mahasiswa</h3>
+            </div>
+            <span class="text-xs font-bold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-full">* Wajib diisi</span>
+          </div>
+
+          <!-- Sapaan Personal Dinamis -->
+          <div id="personal-greeting" class="hidden mb-5 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200/80 rounded-2xl px-4 py-3 text-sm text-indigo-900 flex items-center gap-2.5 animate-fade-in">
+            <span class="text-lg">👋</span>
+            <span>Halo, <strong id="greeting-name" class="text-indigo-700">Mahasiswa</strong>! Semangat mengisi ke-20 pernyataan di bawah ini ya!</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label for="nama" class="block text-sm font-bold text-slate-700 mb-1.5">
+                Nama Lengkap <span class="text-rose-500">*</span>
+              </label>
+              <input type="text" id="nama" name="nama" required placeholder="Contoh: Ahmad Fauzi"
+                oninput="updatePersonalGreeting(this.value)"
+                class="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-50/50 focus:bg-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 transition" />
+              <p id="err-nama" class="hidden text-xs text-rose-600 font-semibold mt-1">Nama lengkap wajib diisi.</p>
+            </div>
+
+            <div>
+              <label for="nim" class="block text-sm font-bold text-slate-700 mb-1.5">
+                NIM <span class="text-rose-500">*</span>
+              </label>
+              <input type="text" id="nim" name="nim" required placeholder="Contoh: 23104080012"
+                class="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-50/50 focus:bg-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 transition" />
+              <p id="err-nim" class="hidden text-xs text-rose-600 font-semibold mt-1">NIM wajib diisi.</p>
+            </div>
+
+            <div>
+              <label for="kelas" class="block text-sm font-bold text-slate-700 mb-1.5">
+                Semester / Kelas <span class="text-rose-500">*</span>
+              </label>
+              <input type="text" id="kelas" name="kelas" required placeholder="Contoh: Semester 4 / PGMI-A"
+                class="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-50/50 focus:bg-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 transition" />
+              <p id="err-kelas" class="hidden text-xs text-rose-600 font-semibold mt-1">Semester / Kelas wajib diisi.</p>
+            </div>
+          </div>
+
+          <!-- Toggle Auto-Scroll Halus -->
+          <div class="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
+            <div class="text-xs text-slate-600">
+              <strong class="text-slate-800">Mode Fokus Otomatis:</strong> Geser otomatis ke pernyataan berikutnya setelah memilih jawaban.
+            </div>
+            <label class="inline-flex items-center cursor-pointer shrink-0">
+              <input type="checkbox" id="auto-scroll-toggle" checked class="sr-only peer" />
+              <div class="w-10 h-5 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-400 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600 relative"></div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Container 20 Butir Pernyataan -->
+        <div id="questions-container" class="space-y-4">
+          <!-- Item dirender otomatis oleh JavaScript -->
+        </div>
+
+        <!-- Validation Summary Alert -->
+        <div id="form-error-banner" class="hidden bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl p-4 text-sm flex items-start gap-3">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-rose-600 shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+          </svg>
+          <div>
+            <p class="font-bold">Masih ada bagian yang belum lengkap!</p>
+            <p id="form-error-detail" class="text-xs sm:text-sm mt-0.5">Silakan lengkapi identitas dan seluruh 20 pernyataan terlebih dahulu.</p>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 pb-10">
+          <button type="button" onclick="resetCurrentForm()"
+            class="w-full sm:w-auto px-5 py-3.5 rounded-2xl border border-slate-300 bg-white text-slate-700 font-bold text-sm hover:bg-slate-50 transition">
+            Kosongkan Formulir
+          </button>
+          <button type="submit" id="btn-submit-angket"
+            class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-700 hover:from-indigo-700 hover:to-purple-800 text-white font-extrabold text-sm sm:text-base shadow-lg shadow-indigo-500/30 hover:shadow-xl transition flex items-center justify-center gap-2.5">
+            <span>Kirim Jawaban Angket</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ==================== VIEW 2: HASIL SKOR RESPONDEN ==================== -->
+    <section id="view-result" class="hidden space-y-6 animate-fade-in">
+      <div class="bg-white rounded-3xl shadow-lg border border-indigo-100 overflow-hidden">
+        <div class="bg-gradient-to-br from-emerald-500 via-teal-600 to-indigo-700 hero-pattern p-6 sm:p-9 text-white text-center sm:text-left">
+          <div class="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md border border-white/25 px-3.5 py-1 rounded-full text-xs font-bold mb-3">
+            <span>🎉</span>
+            <span>Jawaban Berhasil Direkam</span>
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-extrabold">Terima Kasih Atas Partisipasi Anda!</h2>
+          <p class="text-emerald-50 text-sm sm:text-base mt-1.5 max-w-2xl">
+            Kontribusi Anda sangat berarti bagi penelitian ini. Berikut adalah potret profil kepercayaan diri dalam belajar Anda.
+          </p>
+        </div>
+
+        <div class="p-6 sm:p-8 space-y-6">
+          <!-- Info Mahasiswa -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-200/80 text-sm">
+            <div>
+              <span class="text-slate-500 text-xs font-medium block">Nama Mahasiswa</span>
+              <strong id="res-nama" class="text-slate-900 font-bold">-</strong>
+            </div>
+            <div>
+              <span class="text-slate-500 text-xs font-medium block">NIM</span>
+              <strong id="res-nim" class="text-slate-900 font-bold">-</strong>
+            </div>
+            <div>
+              <span class="text-slate-500 text-xs font-medium block">Semester / Kelas</span>
+              <strong id="res-kelas" class="text-slate-900 font-bold">-</strong>
+            </div>
+          </div>
+
+          <!-- Skor Utama dengan Circular Progress Ring & Kategori -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-stretch">
+            <!-- Progress Ring Persentase -->
+            <div class="bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200/80 rounded-2xl p-5 flex flex-col items-center justify-center text-center">
+              <div class="relative w-28 h-28 flex items-center justify-center">
+                <svg class="w-28 h-28 -rotate-90" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="42" stroke="#e0e7ff" stroke-width="10" fill="none" />
+                  <circle id="res-ring-circle" cx="50" cy="50" r="42" stroke="url(#ringGrad)" stroke-width="10"
+                    stroke-linecap="round" fill="none" stroke-dasharray="263.89" stroke-dashoffset="263.89"
+                    style="transition: stroke-dashoffset 0.9s cubic-bezier(0.22, 1, 0.36, 1);" />
+                  <defs>
+                    <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#4f46e5" />
+                      <stop offset="100%" stop-color="#10b981" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center">
+                  <span id="res-percent" class="text-2xl font-extrabold text-indigo-950">0%</span>
+                  <span class="text-[10px] font-bold uppercase text-indigo-600">Capaian</span>
+                </div>
+              </div>
+              <span class="text-xs font-semibold text-slate-600 mt-2">Indeks Kepercayaan Diri</span>
+            </div>
+
+            <!-- Total Skor -->
+            <div class="bg-slate-50/80 border border-slate-200 rounded-2xl p-5 text-center flex flex-col justify-center">
+              <span class="text-xs font-extrabold uppercase tracking-wider text-indigo-600">Total Skor</span>
+              <div class="text-4xl font-extrabold text-slate-900 my-1.5">
+                <span id="res-total">0</span><span class="text-lg font-bold text-slate-400">/100</span>
+              </div>
+              <span class="text-xs text-slate-500">Akumulasi 20 Butir Pernyataan</span>
+            </div>
+
+            <!-- Kategori -->
+            <div class="bg-emerald-50/70 border border-emerald-200 rounded-2xl p-5 text-center flex flex-col justify-center">
+              <span class="text-xs font-extrabold uppercase tracking-wider text-emerald-700">Klasifikasi Kategori</span>
+              <div class="text-2xl font-extrabold text-emerald-950 my-1.5" id="res-category">-</div>
+              <span class="text-xs text-emerald-800/80">Tingkat Kepercayaan Diri</span>
+            </div>
+          </div>
+
+          <!-- Pesan Motivasi Personal Berdasarkan Kategori -->
+          <div id="res-motivation-box" class="bg-indigo-50/80 border border-indigo-200 rounded-2xl p-4 sm:p-5 flex items-start gap-3.5">
+            <span class="text-2xl shrink-0" id="res-motivation-emoji">🌟</span>
+            <div>
+              <h4 class="text-sm font-extrabold text-indigo-950" id="res-motivation-title">Refleksi Diri</h4>
+              <p class="text-xs sm:text-sm text-indigo-900/85 mt-1 leading-relaxed" id="res-motivation-desc">-</p>
+            </div>
+          </div>
+
+          <!-- Rincian Per Aspek Kisi-Kisi -->
+          <div>
+            <h3 class="text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-3">Rincian Skor Berdasarkan 4 Aspek Penilaian</h3>
+            <div id="res-aspects" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <!-- Rincian aspek dirender oleh JS -->
+            </div>
+          </div>
+
+          <!-- Tombol Navigasi Setelah Submit -->
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-200">
+            <button type="button" onclick="switchTab('rekap')"
+              class="w-full sm:w-auto px-5 py-3 rounded-xl border border-slate-300 bg-white text-slate-700 font-bold text-sm hover:bg-slate-50 transition">
+              Rekap Peneliti 🔒
+            </button>
+            <button type="button" onclick="startNextRespondent()"
+              class="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-700 hover:from-indigo-700 hover:to-violet-800 text-white font-bold text-sm shadow-md transition flex items-center justify-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              <span>Isi Responden Berikutnya</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 3: REKAP DATA PENELITI ==================== -->
+    <section id="view-rekap" class="hidden space-y-6 animate-fade-in">
+
+      <!-- LAYAR KUNCI PIN PENELITI -->
+      <div id="pin-lock-screen" class="max-w-md mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden my-4">
+        <div class="h-2 bg-gradient-to-r from-slate-800 via-blue-900 to-indigo-900"></div>
+        <div class="p-6 sm:p-8 text-center">
+          <div class="w-14 h-14 rounded-2xl bg-blue-50 text-blue-800 border border-blue-200 flex items-center justify-center mx-auto mb-4 shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <h2 class="text-xl font-bold text-slate-900">Area Khusus Peneliti</h2>
+          <p class="text-sm text-slate-600 mt-1.5 mb-6">
+            Masukkan <strong>PIN Peneliti (4–6 digit)</strong> untuk membuka seluruh rekap data responden dan mengunduh hasil.
+          </p>
+
+          <form id="pin-unlock-form" onsubmit="handleUnlockPin(event)" class="space-y-4">
+            <div>
+              <input type="password" id="pin-input" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off"
+                placeholder="••••••"
+                class="w-full text-center tracking-[0.5em] text-2xl font-bold px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-700 focus:border-blue-700" />
+              <p id="pin-error-msg" class="hidden text-xs text-rose-600 font-semibold mt-2">
+                PIN yang Anda masukkan salah. Silakan coba lagi.
+              </p>
+            </div>
+
+            <button type="submit"
+              class="w-full py-3 rounded-xl bg-blue-800 hover:bg-blue-900 text-white font-bold text-sm shadow-sm transition">
+              Buka Rekap Data
+            </button>
+          </form>
+
+          <div class="mt-5 pt-4 border-t border-slate-100 text-xs text-slate-500">
+            PIN default awal: <code class="bg-slate-100 text-slate-800 font-bold px-2 py-0.5 rounded">123456</code> (dapat diubah setelah masuk).
+          </div>
+        </div>
+      </div>
+
+      <!-- DASHBOARD REKAP PENELITI (TERBUKA SETELAH PIN VALID) -->
+      <div id="rekap-dashboard" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8 space-y-6">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-6 border-b border-slate-200">
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="text-xl font-bold text-slate-900">Rekapitulasi Data Responden</h2>
+              <span id="sync-status-badge" class="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                Sinkron Real-time
+              </span>
+            </div>
+            <p class="text-sm text-slate-600 mt-1">
+              Seluruh jawaban mahasiswa dari berbagai perangkat otomatis masuk secara real-time di sini.
+            </p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button" onclick="exportToCSV()"
+              class="px-3.5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs sm:text-sm shadow-sm transition flex items-center gap-1.5">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              <span>Export CSV / Excel</span>
+            </button>
+
+            <button type="button" onclick="copyTableForExcel()"
+              class="px-3.5 py-2.5 rounded-xl border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-800 font-semibold text-xs sm:text-sm transition flex items-center gap-1.5">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+              </svg>
+              <span>Salin untuk Excel</span>
+            </button>
+
+            <button type="button" onclick="toggleChangePinModal()"
+              class="px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs sm:text-sm transition">
+              Ubah PIN
+            </button>
+
+            <button type="button" onclick="lockResearcherPanel()"
+              class="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-semibold text-xs sm:text-sm transition flex items-center gap-1.5">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+              <span>Kunci Panel</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- PANEL UBAH PIN PENELITI (INLINE) -->
+        <div id="change-pin-panel" class="hidden bg-slate-50 border border-slate-200 rounded-xl p-4 sm:p-5">
+          <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label for="new-pin-input" class="block text-xs font-bold text-slate-700 mb-1">PIN Baru (4–6 Digit Angka)</label>
+                <input type="password" id="new-pin-input" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="Contoh: 202699"
+                  class="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600" />
+              </div>
+              <div>
+                <label for="confirm-pin-input" class="block text-xs font-bold text-slate-700 mb-1">Konfirmasi PIN Baru</label>
+                <input type="password" id="confirm-pin-input" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="Ulangi PIN baru"
+                  class="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600" />
+              </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <button type="button" onclick="toggleChangePinModal(false)" class="px-3.5 py-2 rounded-lg border border-slate-300 bg-white text-xs font-semibold text-slate-700">Batal</button>
+              <button type="button" onclick="saveNewResearcherPin()" class="px-4 py-2 rounded-lg bg-blue-800 hover:bg-blue-900 text-white text-xs font-bold">Simpan PIN Baru</button>
+            </div>
+          </div>
+          <p id="change-pin-msg" class="hidden text-xs font-semibold mt-2"></p>
+        </div>
+
+        <!-- Ringkasan Statistik Singkat -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5">
+            <span class="text-xs text-slate-500 block">Total Responden</span>
+            <strong id="stat-count" class="text-xl font-bold text-slate-900">0</strong>
+          </div>
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5">
+            <span class="text-xs text-slate-500 block">Rata-rata Skor</span>
+            <strong id="stat-avg" class="text-xl font-bold text-blue-800">0.0</strong>
+          </div>
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5">
+            <span class="text-xs text-slate-500 block">Rata-rata Persentase</span>
+            <strong id="stat-avg-pct" class="text-xl font-bold text-indigo-700">0%</strong>
+          </div>
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5">
+            <span class="text-xs text-slate-500 block">Rentang Skor (Min - Maks)</span>
+            <strong id="stat-range" class="text-lg font-bold text-emerald-700">-</strong>
+          </div>
+        </div>
+
+        <!-- Distribusi Kategori -->
+        <div class="bg-slate-50/70 border border-slate-200 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <span class="font-bold text-slate-700">Distribusi Kategori:</span>
+          <div id="stat-categories" class="flex flex-wrap gap-2">
+            <span class="px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 font-semibold">Sangat Tinggi: 0</span>
+            <span class="px-2.5 py-1 rounded-md bg-blue-100 text-blue-800 font-semibold">Tinggi: 0</span>
+            <span class="px-2.5 py-1 rounded-md bg-amber-100 text-amber-800 font-semibold">Sedang: 0</span>
+            <span class="px-2.5 py-1 rounded-md bg-orange-100 text-orange-800 font-semibold">Rendah: 0</span>
+            <span class="px-2.5 py-1 rounded-md bg-rose-100 text-rose-800 font-semibold">Sangat Rendah: 0</span>
+          </div>
+        </div>
+
+        <!-- Bar Pencarian & Filter -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div class="relative flex-1">
+            <input type="text" id="search-input" oninput="renderRekapTable()"
+              placeholder="Cari berdasarkan Nama, NIM, atau Semester/Kelas..."
+              class="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600" />
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-slate-400 absolute left-3 top-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <select id="filter-category" onchange="renderRekapTable()"
+            class="px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600">
+            <option value="ALL">Semua Kategori</option>
+            <option value="Sangat Tinggi">Sangat Tinggi (81–100%)</option>
+            <option value="Tinggi">Tinggi (61–80%)</option>
+            <option value="Sedang">Sedang (41–60%)</option>
+            <option value="Rendah">Rendah (21–40%)</option>
+            <option value="Sangat Rendah">Sangat Rendah (≤20%)</option>
+          </select>
+        </div>
+
+        <!-- Konfirmasi Hapus Baris Inline (Tanpa confirm() bawaan browser) -->
+        <div id="delete-row-confirm" class="hidden bg-rose-50 border border-rose-300 rounded-xl p-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <p class="text-xs sm:text-sm text-rose-900 font-medium" id="delete-row-text">Hapus data responden ini?</p>
+          <div class="flex items-center gap-2 shrink-0">
+            <button type="button" onclick="cancelDeleteRow()" class="px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-xs font-semibold text-slate-700">Batal</button>
+            <button type="button" onclick="executeDeleteRow()" class="px-3 py-1.5 rounded-lg bg-rose-700 text-white text-xs font-semibold">Ya, Hapus</button>
+          </div>
+        </div>
+
+        <!-- Tabel Data Responden Lengkap -->
+        <div class="overflow-x-auto border border-slate-200 rounded-xl">
+          <table class="min-w-full divide-y divide-slate-200 text-xs">
+            <thead class="bg-slate-100 text-slate-700 whitespace-nowrap">
+              <tr>
+                <th class="px-3 py-3 text-left font-bold">No</th>
+                <th class="px-3 py-3 text-left font-bold">Waktu Isi</th>
+                <th class="px-3 py-3 text-left font-bold">Nama Mahasiswa</th>
+                <th class="px-3 py-3 text-left font-bold">NIM</th>
+                <th class="px-3 py-3 text-left font-bold">Semester/Kelas</th>
+                <th class="px-2 py-3 text-center font-bold bg-blue-50/70" title="Keyakinan Kemampuan Diri (Maks 40)">Aspek 1</th>
+                <th class="px-2 py-3 text-center font-bold bg-blue-50/70" title="Objektif & Bertanggung Jawab (Maks 20)">Aspek 2</th>
+                <th class="px-2 py-3 text-center font-bold bg-blue-50/70" title="Rasional & Realistis (Maks 20)">Aspek 3</th>
+                <th class="px-2 py-3 text-center font-bold bg-blue-50/70" title="Keberanian Berpendapat & Tampil (Maks 20)">Aspek 4</th>
+                <th class="px-3 py-3 text-center font-bold">Total</th>
+                <th class="px-3 py-3 text-center font-bold">%</th>
+                <th class="px-3 py-3 text-left font-bold">Kategori</th>
+                <th class="px-3 py-3 text-center font-bold">Rincian P1–P20</th>
+                <th class="px-3 py-3 text-center font-bold">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="rekap-table-body" class="divide-y divide-slate-200 bg-white">
+              <!-- Baris data dirender oleh JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- MODAL DETAIL JAWABAN P1-P20 PER RESPONDEN -->
+    <div id="detail-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden animate-fade-in">
+        <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+          <div>
+            <h3 class="font-bold text-slate-900 text-base" id="modal-resp-name">Detail Jawaban Responden</h3>
+            <p class="text-xs text-slate-500" id="modal-resp-meta">-</p>
+          </div>
+          <button type="button" onclick="closeDetailModal()" class="p-1.5 rounded-lg text-slate-500 hover:bg-slate-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div id="modal-resp-body" class="p-5 overflow-y-auto space-y-2 text-xs sm:text-sm">
+          <!-- Konten detail item dirender JS -->
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 py-4 px-4 text-center text-xs text-slate-500">
+    Instrumen Angket Kepercayaan Diri dalam Belajar Mahasiswa &bull; Skala Likert 5 Poin (20 Butir Pernyataan)
+  </footer>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, doc, addDoc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // =========================================================================
+    // 1. DATA INSTRUMEN & KISI-KISI ANGKET (20 BUTIR PERNYATAAN)
+    // =========================================================================
+    const QUESTIONS = [
+      { id: 1,  text: "Saya yakin mampu mengerjakan tugas yang diberikan oleh dosen dengan baik.", type: "+", aspect: "Keyakinan Kemampuan Diri" },
+      { id: 2,  text: "Saya mampu menyelesaikan soal-soal yang sulit jika berusaha sungguh-sungguh.", type: "+", aspect: "Keyakinan Kemampuan Diri" },
+      { id: 3,  text: "Saya merasa ragu setiap kali dosen memberikan tugas baru.", type: "-", aspect: "Keyakinan Kemampuan Diri" },
+      { id: 4,  text: "Saya mudah menyerah apabila menemukan soal perkuliahan yang sulit.", type: "-", aspect: "Keyakinan Kemampuan Diri" },
+      { id: 5,  text: "Saya yakin bisa mendapatkan nilai yang memuaskan dalam ujian.", type: "+", aspect: "Keyakinan Kemampuan Diri" },
+      { id: 6,  text: "Saya yakin dapat memahami materi perkuliahan apabila memperhatikannya dengan saksama.", type: "+", aspect: "Keyakinan Kemampuan Diri" },
+      { id: 7,  text: "Saya merasa sulit untuk bisa memperoleh nilai yang memuaskan di kelas", type: "-", aspect: "Keyakinan Kemampuan Diri" },
+      { id: 8,  text: "Saya merasa hasil pekerjaan saya selalu lebih buruk dari rekan mahasiswa.", type: "-", aspect: "Keyakinan Kemampuan Diri" },
+      { id: 9,  text: "Saya menerima masukan dari dosen maupun rekan mahasiswa untuk memperbaiki tugas saya.", type: "+", aspect: "Objektif & Bertanggung Jawab" },
+      { id: 10, text: "Saya menyelesaikan tugas yang menjadi tanggung jawab saya tepat waktu.", type: "+", aspect: "Objektif & Bertanggung Jawab" },
+      { id: 11, text: "Saya mencontek pekerjaan rekan mahasiswa karena tidak yakin dengan jawaban sendiri.", type: "-", aspect: "Objektif & Bertanggung Jawab" },
+      { id: 12, text: "Saya melemparkan kesalahan kepada rekan kelompok ketika tugas kelompok kurang maksimal.", type: "-", aspect: "Objektif & Bertanggung Jawab" },
+      { id: 13, text: "Saya mengetahui materi perkuliahan mana yang sudah saya kuasai dan yang belum.", type: "+", aspect: "Rasional & Realistis" },
+      { id: 14, text: "Saya bertanya kepada dosen apabila ada materi yang benar-benar belum dipahami.", type: "+", aspect: "Rasional & Realistis" },
+      { id: 15, text: "Saya memaksakan diri meniru cara belajar orang lain tanpa melihat kemampuan diri.", type: "-", aspect: "Rasional & Realistis" },
+      { id: 16, text: "Saya merasa kemampuan saya di kelas biasa-biasa saja dan tidak terlalu mencolok", type: "-", aspect: "Rasional & Realistis" },
+      { id: 17, text: "Saya berani mengacungkan tangan untuk menjawab pertanyaan dari dosen.", type: "+", aspect: "Keberanian Berpendapat & Tampil" },
+      { id: 18, text: "Saya percaya diri saat mempresentasikan hasil tugas di depan forum kelas.", type: "+", aspect: "Keberanian Berpendapat & Tampil" },
+      { id: 19, text: "Saya merasa gugup dan gemetar saat diminta tampil memaparkan materi di depan kelas.", type: "-", aspect: "Keberanian Berpendapat & Tampil" },
+      { id: 20, text: "Saya takut diremehkan rekan mahasiswa apabila pendapat saya salah saat berdiskusi.", type: "-", aspect: "Keberanian Berpendapat & Tampil" }
+    ];
+
+    const LIKERT_CHOICES = [
+      { code: "SS",  label: "Sangat Setuju" },
+      { code: "S",   label: "Setuju" },
+      { code: "RR",  label: "Ragu-Ragu" },
+      { code: "TS",  label: "Tidak Setuju" },
+      { code: "STS", label: "Sangat Tidak Setuju" }
+    ];
+
+    const ASPECT_MAX_SCORES = {
+      "Keyakinan Kemampuan Diri": 40,       // 8 item x 5
+      "Objektif & Bertanggung Jawab": 20,   // 4 item x 5
+      "Rasional & Realistis": 20,           // 4 item x 5
+      "Keberanian Berpendapat & Tampil": 20 // 4 item x 5
+    };
+
+    const ASPECT_STYLES = {
+      "Keyakinan Kemampuan Diri": { bar: "bg-indigo-600", badge: "bg-indigo-100 text-indigo-800", icon: "💪" },
+      "Objektif & Bertanggung Jawab": { bar: "bg-emerald-600", badge: "bg-emerald-100 text-emerald-800", icon: "🎯" },
+      "Rasional & Realistis": { bar: "bg-amber-500", badge: "bg-amber-100 text-amber-800", icon: "🧠" },
+      "Keberanian Berpendapat & Tampil": { bar: "bg-violet-600", badge: "bg-violet-100 text-violet-800", icon: "🎤" }
+    };
+
+    const STORAGE_KEY = "angket_kepercayaan_diri_mahasiswa_v2";
+    const PIN_STORAGE_KEY = "angket_kepercayaan_diri_pin_v1";
+    const DEFAULT_PIN = "123456";
+
+    let responsesList = [];
+    let currentResearcherPin = localStorage.getItem(PIN_STORAGE_KEY) || DEFAULT_PIN;
+    let isResearcherUnlocked = false;
+    let pendingDeleteTarget = null;
+
+    let db = null;
+    let auth = null;
+    let currentUser = null;
+    let cloudEnabled = false;
+    const appId = typeof __app_id !== "undefined" ? __app_id : "default-app-id";
+
+    // =========================================================================
+    // 2. INISIALISASI FIREBASE & SINKRONISASI REAL-TIME
+    // =========================================================================
+    async function initCloudSync() {
+      try {
+        if (typeof __firebase_config === "undefined" || !__firebase_config) {
+          throw new Error("Konfigurasi Firebase tidak tersedia.");
+        }
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+
+        if (typeof __initial_auth_token !== "undefined" && __initial_auth_token) {
+          await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+          await signInAnonymously(auth);
+        }
+
+        onAuthStateChanged(auth, (user) => {
+          currentUser = user;
+          if (user) {
+            cloudEnabled = true;
+            subscribeToResponses();
+            subscribeToResearcherConfig();
+          }
+        });
+      } catch (err) {
+        console.warn("Beralih ke penyimpanan lokal cadangan:", err);
+        cloudEnabled = false;
+        loadLocalFallback();
+        updateSyncBadge(false);
+      }
+    }
+
+    function updateSyncBadge(isOnline) {
+      const badge = document.getElementById("sync-status-badge");
+      if (!badge) return;
+      if (isOnline) {
+        badge.className = "inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200";
+        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Terhubung Cloud Real-time`;
+      } else {
+        badge.className = "inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200";
+        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500"></span> Mode Offline (Lokal)`;
+      }
+    }
+
+    function subscribeToResponses() {
+      if (!db || !currentUser) return;
+      const colRef = collection(db, "artifacts", appId, "public", "data", "responden_kepercayaan_diri");
+
+      onSnapshot(
+        colRef,
+        (snapshot) => {
+          const cloudData = [];
+          snapshot.forEach((docSnap) => {
+            cloudData.push({
+              docId: docSnap.id,
+              ...docSnap.data()
+            });
+          });
+
+          cloudData.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+          responsesList = cloudData;
+
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(responsesList));
+          } catch (_) {}
+
+          updateSyncBadge(true);
+          refreshStatsAndTable();
+        },
+        (error) => {
+          console.error("Gagal menyinkronkan data responden:", error);
+          updateSyncBadge(false);
+          loadLocalFallback();
+        }
+      );
+    }
+
+    function subscribeToResearcherConfig() {
+      if (!db || !currentUser) return;
+      const configRef = doc(db, "artifacts", appId, "public", "data", "konfigurasi_peneliti", "pin_setting");
+
+      onSnapshot(
+        configRef,
+        (docSnap) => {
+          if (docSnap.exists() && docSnap.data().pin) {
+            currentResearcherPin = String(docSnap.data().pin);
+            try {
+              localStorage.setItem(PIN_STORAGE_KEY, currentResearcherPin);
+            } catch (_) {}
+          }
+        },
+        (err) => {
+          console.warn("Gagal membaca konfigurasi PIN:", err);
+        }
+      );
+    }
+
+    function loadLocalFallback() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        responsesList = raw ? JSON.parse(raw) : [];
+      } catch (_) {
+        responsesList = [];
+      }
+      refreshStatsAndTable();
+    }
+
+    // =========================================================================
+    // 3. RENDER DAFTAR 20 PERNYATAAN & SAPAAN PERSONAL
+    // =========================================================================
+    window.updatePersonalGreeting = function (rawName) {
+      const greetingBox = document.getElementById("personal-greeting");
+      const greetingName = document.getElementById("greeting-name");
+      const trimmed = rawName.trim();
+      if (trimmed.length >= 2) {
+        greetingName.textContent = trimmed;
+        greetingBox.classList.remove("hidden");
+      } else {
+        greetingBox.classList.add("hidden");
+      }
+    };
+
+    function renderQuestions() {
+      const container = document.getElementById("questions-container");
+      container.innerHTML = "";
+
+      QUESTIONS.forEach((q, idx) => {
+        const card = document.createElement("div");
+        card.id = `card-q-${q.id}`;
+        card.className = "bg-white rounded-3xl shadow-xs border border-slate-200/90 p-5 sm:p-6 transition-all duration-200 hover:border-indigo-200";
+
+        const optionsHTML = LIKERT_CHOICES.map((choice) => `
+          <label class="likert-option cursor-pointer select-none block">
+            <input type="radio" name="q_${q.id}" value="${choice.code}" class="sr-only" onchange="handleAnswerChange(${q.id})" />
+            <div class="likert-box border border-slate-200 bg-slate-50/80 hover:bg-indigo-50/70 hover:border-indigo-300 rounded-2xl py-3 px-2 text-center h-full flex flex-col items-center justify-center">
+              <span class="font-extrabold text-sm sm:text-base tracking-tight">${choice.code}</span>
+              <span class="likert-sub text-[11px] text-slate-500 font-medium mt-0.5 leading-tight">${choice.label}</span>
+            </div>
+          </label>
+        `).join("");
+
+        const nextBtnHTML = idx < QUESTIONS.length - 1
+          ? `<button type="button" onclick="scrollToQuestion(${q.id + 1})" class="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-lg transition">Lanjut No. ${q.id + 1} ↓</button>`
+          : `<button type="button" onclick="document.getElementById('btn-submit-angket').scrollIntoView({behavior:'smooth', block:'center'})" class="text-[11px] font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1 rounded-lg transition">Ke Tombol Kirim ↓</button>`;
+
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-3 mb-4">
+            <div class="flex items-start gap-3 flex-1">
+              <span id="badge-num-${q.id}" class="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-50 to-violet-50 text-indigo-800 border border-indigo-200 font-extrabold text-xs flex items-center justify-center shrink-0 mt-0.5">
+                ${q.id}
+              </span>
+              <p class="text-sm sm:text-base font-semibold text-slate-800 leading-relaxed flex-1">
+                ${q.text} <span class="text-rose-500 font-bold">*</span>
+              </p>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <span id="check-q-${q.id}" class="hidden animate-pop w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-xs" title="Sudah dijawab">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                </svg>
+              </span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-2.5 pl-0 sm:pl-11">
+            ${optionsHTML}
+          </div>
+
+          <div class="flex items-center justify-between mt-3 sm:pl-11">
+            <p id="err-q-${q.id}" class="hidden text-xs text-rose-600 font-semibold">
+              Silakan pilih salah satu jawaban untuk nomor ${q.id}.
+            </p>
+            <div class="ml-auto">
+              ${nextBtnHTML}
+            </div>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    window.scrollToQuestion = function (targetId) {
+      const targetCard = document.getElementById(`card-q-${targetId}`);
+      if (targetCard) {
+        targetCard.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    };
+
+    // =========================================================================
+    // 4. PROGRESS BAR & LOGIKA PENSKORAN OTOMATIS
+    // =========================================================================
+    window.handleAnswerChange = function (qId) {
+      const card = document.getElementById(`card-q-${qId}`);
+      const errText = document.getElementById(`err-q-${qId}`);
+      const checkBadge = document.getElementById(`check-q-${qId}`);
+      const numBadge = document.getElementById(`badge-num-${qId}`);
+
+      if (card) {
+        card.classList.remove("border-rose-400", "bg-rose-50/30", "border-slate-200/90");
+        card.classList.add("question-answered");
+      }
+      if (errText) errText.classList.add("hidden");
+      if (checkBadge) checkBadge.classList.remove("hidden");
+      if (numBadge) {
+        numBadge.className = "w-8 h-8 rounded-xl bg-emerald-600 text-white font-extrabold text-xs flex items-center justify-center shrink-0 mt-0.5 shadow-2xs";
+      }
+
+      updateProgress();
+
+      const autoScroll = document.getElementById("auto-scroll-toggle")?.checked;
+      if (autoScroll && qId < QUESTIONS.length) {
+        setTimeout(() => {
+          const nextSelected = document.querySelector(`input[name="q_${qId + 1}"]:checked`);
+          if (!nextSelected) {
+            scrollToQuestion(qId + 1);
+          }
+        }, 240);
+      }
+    };
+
+    function updateProgress() {
+      let answeredCount = 0;
+      QUESTIONS.forEach((q) => {
+        const selected = document.querySelector(`input[name="q_${q.id}"]:checked`);
+        if (selected) answeredCount++;
+      });
+
+      const percent = Math.round((answeredCount / QUESTIONS.length) * 100);
+      document.getElementById("progress-bar").style.width = `${percent}%`;
+      document.getElementById("progress-text").textContent = `${answeredCount} / ${QUESTIONS.length} (${percent}%)`;
+
+      const motivationEl = document.getElementById("progress-motivation");
+      if (answeredCount === 0) {
+        motivationEl.innerHTML = `<span>✨</span><span>Yuk mulai! Jawab sesuai kondisi diri Anda yang sebenarnya.</span>`;
+      } else if (percent < 25) {
+        motivationEl.innerHTML = `<span>🚀</span><span>Langkah awal yang bagus! Teruskan ya...</span>`;
+      } else if (percent < 50) {
+        motivationEl.innerHTML = `<span>💪</span><span>Mantap! Terus melaju, kamu sudah melewati seperempat bagian.</span>`;
+      } else if (percent < 75) {
+        motivationEl.innerHTML = `<span>🔥</span><span>Setengah jalan terlampaui! Pertahankan fokusmu.</span>`;
+      } else if (percent < 100) {
+        motivationEl.innerHTML = `<span>⚡</span><span>Sedikit lagi selesai! Tinggal beberapa nomor terakhir.</span>`;
+      } else {
+        motivationEl.innerHTML = `<span>🎉</span><span class="text-emerald-700">Luar biasa! Semua 20 pernyataan terisi dan siap dikirim!</span>`;
+      }
+    }
+
+    function calculateItemScore(type, answerCode) {
+      const positiveMap = { SS: 5, S: 4, RR: 3, TS: 2, STS: 1 };
+      const negativeMap = { SS: 1, S: 2, RR: 3, TS: 4, STS: 5 };
+      return type === "+" ? positiveMap[answerCode] : negativeMap[answerCode];
+    }
+
+    function getConfidenceCategory(percentage) {
+      if (percentage >= 81) return {
+        label: "Sangat Tinggi",
+        badgeClass: "bg-emerald-100 text-emerald-800",
+        emoji: "🏆",
+        title: "Kepercayaan Diri Belajar Sangat Tinggi!",
+        desc: "Kamu memiliki keyakinan diri yang sangat kuat dalam menghadapi tantangan perkuliahan, berani berpendapat di forum kelas, serta bertanggung jawab penuh atas proses belajarmu. Pertahankan!"
+      };
+      if (percentage >= 61) return {
+        label: "Tinggi",
+        badgeClass: "bg-blue-100 text-blue-800",
+        emoji: "🌟",
+        title: "Kepercayaan Diri Belajar Tinggi!",
+        desc: "Kamu sudah menunjukkan sikap positif, objektif, dan cukup percaya diri dalam mengikuti perkuliahan maupun diskusi kelompok. Terus asah keberanianmu untuk tampil lebih optimal!"
+      };
+      if (percentage >= 41) return {
+        label: "Sedang",
+        badgeClass: "bg-amber-100 text-amber-800",
+        emoji: "💡",
+        title: "Kepercayaan Diri Belajar Cukup / Sedang",
+        desc: "Kamu memiliki modal kepercayaan diri yang baik di beberapa aspek, namun terkadang masih muncul rasa ragu saat menghadapi tugas sulit atau tampil di depan kelas. Terus berlatih secara bertahap!"
+      };
+      if (percentage >= 21) return {
+        label: "Rendah",
+        badgeClass: "bg-orange-100 text-orange-800",
+        emoji: "🌱",
+        title: "Kepercayaan Diri Belajar Perlu Ditingkatkan",
+        desc: "Jangan berkecil hati! Mulailah dari langkah kecil seperti mencatat poin penting materi, aktif berdiskusi dalam kelompok kecil, dan yakin pada kemampuan dirimu sendiri."
+      };
+      return {
+        label: "Sangat Rendah",
+        badgeClass: "bg-rose-100 text-rose-800",
+        emoji: "🤝",
+        title: "Mari Bangun Kepercayaan Diri Belajarmu",
+        desc: "Setiap mahasiswa memiliki potensi unik. Cobalah berdiskusi dengan dosen atau rekan belajar agar lebih nyaman memahami materi dan menumbuhkan rasa percaya diri secara bertahap."
+      };
+    }
+
+    // =========================================================================
+    // 5. VALIDASI & PENGIRIMAN JAWABAN KE FIRESTORE
+    // =========================================================================
+    document.getElementById("survey-form").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const namaInput = document.getElementById("nama");
+      const nimInput = document.getElementById("nim");
+      const kelasInput = document.getElementById("kelas");
+
+      let firstInvalidEl = null;
+      let missingNumbers = [];
+
+      ["nama", "nim", "kelas"].forEach((field) => {
+        document.getElementById(`err-${field}`).classList.add("hidden");
+        document.getElementById(field).classList.remove("border-rose-500");
+      });
+
+      if (!namaInput.value.trim()) {
+        document.getElementById("err-nama").classList.remove("hidden");
+        namaInput.classList.add("border-rose-500");
+        if (!firstInvalidEl) firstInvalidEl = namaInput;
+      }
+      if (!nimInput.value.trim()) {
+        document.getElementById("err-nim").classList.remove("hidden");
+        nimInput.classList.add("border-rose-500");
+        if (!firstInvalidEl) firstInvalidEl = nimInput;
+      }
+      if (!kelasInput.value.trim()) {
+        document.getElementById("err-kelas").classList.remove("hidden");
+        kelasInput.classList.add("border-rose-500");
+        if (!firstInvalidEl) firstInvalidEl = kelasInput;
+      }
+
+      const answers = {};
+      const itemScores = {};
+      const aspectScores = {
+        "Keyakinan Kemampuan Diri": 0,
+        "Objektif & Bertanggung Jawab": 0,
+        "Rasional & Realistis": 0,
+        "Keberanian Berpendapat & Tampil": 0
+      };
+      let totalScore = 0;
+
+      QUESTIONS.forEach((q) => {
+        const selected = document.querySelector(`input[name="q_${q.id}"]:checked`);
+        const card = document.getElementById(`card-q-${q.id}`);
+        const errText = document.getElementById(`err-q-${q.id}`);
+
+        if (!selected) {
+          missingNumbers.push(q.id);
+          card.classList.remove("border-slate-200");
+          card.classList.add("border-rose-400", "bg-rose-50/30");
+          errText.classList.remove("hidden");
+          if (!firstInvalidEl) firstInvalidEl = card;
+        } else {
+          const code = selected.value;
+          const score = calculateItemScore(q.type, code);
+          answers[`q${q.id}`] = code;
+          itemScores[`s${q.id}`] = score;
+          aspectScores[q.aspect] += score;
+          totalScore += score;
+        }
+      });
+
+      const errorBanner = document.getElementById("form-error-banner");
+      if (firstInvalidEl) {
+        errorBanner.classList.remove("hidden");
+        const msgParts = [];
+        if (!namaInput.value.trim() || !nimInput.value.trim() || !kelasInput.value.trim()) {
+          msgParts.push("identitas mahasiswa");
+        }
+        if (missingNumbers.length > 0) {
+          msgParts.push(`pernyataan nomor: ${missingNumbers.join(", ")}`);
+        }
+        document.getElementById("form-error-detail").textContent =
+          `Mohon lengkapi ${msgParts.join(" serta ")}.`;
+
+        firstInvalidEl.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+      }
+
+      errorBanner.classList.add("hidden");
+
+      const submitBtn = document.getElementById("btn-submit-angket");
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `<span>Menyimpan Jawaban...</span>`;
+
+      const percentage = Math.round((totalScore / 100) * 100);
+      const categoryObj = getConfidenceCategory(percentage);
+      const now = Date.now();
+
+      const record = {
+        createdAt: now,
+        timestamp: new Date(now).toLocaleString("id-ID"),
+        nama: namaInput.value.trim(),
+        nim: nimInput.value.trim(),
+        kelas: kelasInput.value.trim(),
+        answers,
+        itemScores,
+        aspectScores,
+        totalScore,
+        percentage,
+        category: categoryObj.label
+      };
+
+      try {
+        if (cloudEnabled && db && currentUser) {
+          const colRef = collection(db, "artifacts", appId, "public", "data", "responden_kepercayaan_diri");
+          await addDoc(colRef, record);
+        } else {
+          // Cadangan lokal jika sedang offline
+          record.docId = String(now);
+          responsesList.unshift(record);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(responsesList));
+          refreshStatsAndTable();
+        }
+
+        displayRespondentResult(record);
+        showToast("Jawaban berhasil dikirim dan tersimpan ke database!");
+      } catch (err) {
+        console.error("Gagal menyimpan ke cloud, menyimpan ke lokal:", err);
+        record.docId = String(now);
+        responsesList.unshift(record);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(responsesList));
+        refreshStatsAndTable();
+        displayRespondentResult(record);
+        showToast("Jawaban tersimpan (cadangan lokal).");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `
+          <span>Kirim Jawaban Angket</span>
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+          </svg>
+        `;
+      }
+    });
+
+    function displayRespondentResult(record) {
+      document.getElementById("res-nama").textContent = record.nama;
+      document.getElementById("res-nim").textContent = record.nim;
+      document.getElementById("res-kelas").textContent = record.kelas;
+      document.getElementById("res-total").textContent = record.totalScore;
+      document.getElementById("res-percent").textContent = `${record.percentage}%`;
+      document.getElementById("res-category").textContent = record.category;
+
+      // Animasi circular progress ring
+      const circle = document.getElementById("res-ring-circle");
+      if (circle) {
+        const circumference = 263.89;
+        const offset = circumference - (record.percentage / 100) * circumference;
+        circle.style.strokeDashoffset = circumference;
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            circle.style.strokeDashoffset = offset;
+          }, 80);
+        });
+      }
+
+      // Pesan refleksi motivasi sesuai kategori
+      const catInfo = getConfidenceCategory(record.percentage);
+      document.getElementById("res-motivation-emoji").textContent = catInfo.emoji;
+      document.getElementById("res-motivation-title").textContent = catInfo.title;
+      document.getElementById("res-motivation-desc").textContent = catInfo.desc;
+
+      const aspectsContainer = document.getElementById("res-aspects");
+      aspectsContainer.innerHTML = "";
+
+      Object.keys(ASPECT_MAX_SCORES).forEach((aspectName) => {
+        const obtained = record.aspectScores[aspectName];
+        const max = ASPECT_MAX_SCORES[aspectName];
+        const pct = Math.round((obtained / max) * 100);
+        const style = ASPECT_STYLES[aspectName] || { bar: "bg-indigo-600", badge: "bg-indigo-100 text-indigo-800", icon: "📊" };
+
+        const div = document.createElement("div");
+        div.className = "border border-slate-200/90 rounded-2xl p-4 bg-slate-50/60 hover:bg-white transition";
+        div.innerHTML = `
+          <div class="flex items-center justify-between gap-2 text-xs sm:text-sm font-bold text-slate-800 mb-2">
+            <span class="flex items-center gap-1.5">
+              <span>${style.icon}</span>
+              <span>${aspectName}</span>
+            </span>
+            <span class="px-2 py-0.5 rounded-lg text-xs font-extrabold ${style.badge}">${obtained}/${max} (${pct}%)</span>
+          </div>
+          <div class="w-full bg-slate-200/80 rounded-full h-2.5 overflow-hidden">
+            <div class="${style.bar} h-2.5 rounded-full transition-all duration-700" style="width: ${pct}%"></div>
+          </div>
+        `;
+        aspectsContainer.appendChild(div);
+      });
+
+      document.getElementById("view-form").classList.add("hidden");
+      document.getElementById("view-rekap").classList.add("hidden");
+      document.getElementById("view-result").classList.remove("hidden");
+      document.getElementById("progress-container").classList.add("hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      launchConfetti();
+    }
+
+    function launchConfetti() {
+      const canvas = document.getElementById("confetti-canvas");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      canvas.classList.remove("hidden");
+
+      const colors = ["#4f46e5", "#7c3aed", "#10b981", "#f59e0b", "#ec4899", "#06b6d4"];
+      const particles = Array.from({ length: 85 }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height - canvas.height,
+        w: Math.random() * 8 + 5,
+        h: Math.random() * 5 + 4,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        speedY: Math.random() * 3.5 + 2.2,
+        speedX: Math.random() * 2 - 1,
+        angle: Math.random() * 360,
+        spin: Math.random() * 8 - 4
+      }));
+
+      let frame = 0;
+      const maxFrames = 140;
+
+      function animateConfetti() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach((p) => {
+          p.y += p.speedY;
+          p.x += p.speedX;
+          p.angle += p.spin;
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate((p.angle * Math.PI) / 180);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+          ctx.restore();
+        });
+
+        frame++;
+        if (frame < maxFrames) {
+          requestAnimationFrame(animateConfetti);
+        } else {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          canvas.classList.add("hidden");
+        }
+      }
+
+      animateConfetti();
+    }
+
+    // =========================================================================
+    // 6. KEAMANAN PIN PENELITI (LOCK SCREEN & UBAH PIN)
+    // =========================================================================
+    window.handleUnlockPin = function (e) {
+      e.preventDefault();
+      const inputEl = document.getElementById("pin-input");
+      const errorEl = document.getElementById("pin-error-msg");
+      const entered = inputEl.value.trim();
+
+      if (entered === currentResearcherPin) {
+        isResearcherUnlocked = true;
+        errorEl.classList.add("hidden");
+        inputEl.value = "";
+        updateResearcherLockUI();
+        refreshStatsAndTable();
+        showToast("Akses Rekap Data Peneliti dibuka.");
+      } else {
+        errorEl.classList.remove("hidden");
+        inputEl.focus();
+        inputEl.select();
+      }
+    };
+
+    window.lockResearcherPanel = function () {
+      isResearcherUnlocked = false;
+      updateResearcherLockUI();
+      showToast("Panel rekap data peneliti dikunci kembali.");
+    };
+
+    function updateResearcherLockUI() {
+      const lockScreen = document.getElementById("pin-lock-screen");
+      const dashboard = document.getElementById("rekap-dashboard");
+
+      if (isResearcherUnlocked) {
+        lockScreen.classList.add("hidden");
+        dashboard.classList.remove("hidden");
+      } else {
+        dashboard.classList.add("hidden");
+        lockScreen.classList.remove("hidden");
+        document.getElementById("pin-error-msg").classList.add("hidden");
+      }
+    }
+
+    window.toggleChangePinModal = function (forceState) {
+      const panel = document.getElementById("change-pin-panel");
+      const msg = document.getElementById("change-pin-msg");
+      msg.classList.add("hidden");
+      document.getElementById("new-pin-input").value = "";
+      document.getElementById("confirm-pin-input").value = "";
+
+      if (typeof forceState === "boolean") {
+        panel.classList.toggle("hidden", !forceState);
+      } else {
+        panel.classList.toggle("hidden");
+      }
+    };
+
+    window.saveNewResearcherPin = async function () {
+      const newPin = document.getElementById("new-pin-input").value.trim();
+      const confirmPin = document.getElementById("confirm-pin-input").value.trim();
+      const msg = document.getElementById("change-pin-msg");
+
+      if (!/^\d{4,6}$/.test(newPin)) {
+        msg.textContent = "PIN baru harus terdiri dari 4 hingga 6 digit angka.";
+        msg.className = "text-xs font-semibold mt-2 text-rose-600";
+        return;
+      }
+      if (newPin !== confirmPin) {
+        msg.textContent = "Konfirmasi PIN tidak cocok dengan PIN baru.";
+        msg.className = "text-xs font-semibold mt-2 text-rose-600";
+        return;
+      }
+
+      currentResearcherPin = newPin;
+      try {
+        localStorage.setItem(PIN_STORAGE_KEY, newPin);
+      } catch (_) {}
+
+      if (cloudEnabled && db && currentUser) {
+        try {
+          const configRef = doc(db, "artifacts", appId, "public", "data", "konfigurasi_peneliti", "pin_setting");
+          await setDoc(configRef, { pin: newPin, updatedAt: Date.now() });
+        } catch (err) {
+          console.error("Gagal menyimpan PIN baru ke cloud:", err);
+        }
+      }
+
+      toggleChangePinModal(false);
+      showToast("PIN Peneliti berhasil diperbarui!");
+    };
+
+    // =========================================================================
+    // 7. STATISTIK, TABEL REKAP, HAPUS BARIS, SALIN EXCEL & EXPORT CSV
+    // =========================================================================
+    function refreshStatsAndTable() {
+      document.getElementById("badge-count").textContent = responsesList.length;
+
+      // Statistik keseluruhan
+      document.getElementById("stat-count").textContent = responsesList.length;
+
+      const catCounts = {
+        "Sangat Tinggi": 0,
+        "Tinggi": 0,
+        "Sedang": 0,
+        "Rendah": 0,
+        "Sangat Rendah": 0
+      };
+
+      if (responsesList.length > 0) {
+        const scores = responsesList.map((r) => Number(r.totalScore) || 0);
+        const sum = scores.reduce((a, b) => a + b, 0);
+        const avg = sum / responsesList.length;
+        document.getElementById("stat-avg").textContent = avg.toFixed(1);
+        document.getElementById("stat-avg-pct").textContent = `${Math.round(avg)}%`;
+        document.getElementById("stat-range").textContent = `${Math.min(...scores)} – ${Math.max(...scores)}`;
+
+        responsesList.forEach((r) => {
+          if (catCounts[r.category] !== undefined) {
+            catCounts[r.category]++;
+          }
+        });
+      } else {
+        document.getElementById("stat-avg").textContent = "0.0";
+        document.getElementById("stat-avg-pct").textContent = "0%";
+        document.getElementById("stat-range").textContent = "-";
+      }
+
+      document.getElementById("stat-categories").innerHTML = `
+        <span class="px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 font-semibold">Sangat Tinggi: ${catCounts["Sangat Tinggi"]}</span>
+        <span class="px-2.5 py-1 rounded-md bg-blue-100 text-blue-800 font-semibold">Tinggi: ${catCounts["Tinggi"]}</span>
+        <span class="px-2.5 py-1 rounded-md bg-amber-100 text-amber-800 font-semibold">Sedang: ${catCounts["Sedang"]}</span>
+        <span class="px-2.5 py-1 rounded-md bg-orange-100 text-orange-800 font-semibold">Rendah: ${catCounts["Rendah"]}</span>
+        <span class="px-2.5 py-1 rounded-md bg-rose-100 text-rose-800 font-semibold">Sangat Rendah: ${catCounts["Sangat Rendah"]}</span>
+      `;
+
+      renderRekapTable();
+    }
+
+    window.renderRekapTable = function () {
+      const tbody = document.getElementById("rekap-table-body");
+      if (!tbody) return;
+
+      const keyword = (document.getElementById("search-input")?.value || "").toLowerCase().trim();
+      const catFilter = document.getElementById("filter-category")?.value || "ALL";
+
+      const filtered = responsesList.filter((r) => {
+        const matchKeyword =
+          !keyword ||
+          (r.nama && r.nama.toLowerCase().includes(keyword)) ||
+          (r.nim && r.nim.toLowerCase().includes(keyword)) ||
+          (r.kelas && r.kelas.toLowerCase().includes(keyword));
+        const matchCat = catFilter === "ALL" || r.category === catFilter;
+        return matchKeyword && matchCat;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="14" class="px-4 py-10 text-center text-slate-500 text-sm">
+              ${responsesList.length === 0
+                ? 'Belum ada responden yang mengisi angket. Bagikan formulir ini kepada mahasiswa untuk mulai mengumpulkan data.'
+                : 'Tidak ada data responden yang sesuai dengan pencarian/filter.'}
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map((r, index) => {
+        const cat = getConfidenceCategory(r.percentage);
+        const a1 = r.aspectScores?.["Keyakinan Kemampuan Diri"] ?? "-";
+        const a2 = r.aspectScores?.["Objektif & Bertanggung Jawab"] ?? "-";
+        const a3 = r.aspectScores?.["Rasional & Realistis"] ?? "-";
+        const a4 = r.aspectScores?.["Keberanian Berpendapat & Tampil"] ?? "-";
+
+        return `
+          <tr class="hover:bg-slate-50 transition whitespace-nowrap">
+            <td class="px-3 py-3 text-slate-600 font-medium">${index + 1}</td>
+            <td class="px-3 py-3 text-slate-500">${escapeHtml(r.timestamp || "-")}</td>
+            <td class="px-3 py-3 font-semibold text-slate-900">${escapeHtml(r.nama)}</td>
+            <td class="px-3 py-3 text-slate-700">${escapeHtml(r.nim)}</td>
+            <td class="px-3 py-3 text-slate-700">${escapeHtml(r.kelas)}</td>
+            <td class="px-2 py-3 text-center font-medium text-slate-700 bg-blue-50/30">${a1}</td>
+            <td class="px-2 py-3 text-center font-medium text-slate-700 bg-blue-50/30">${a2}</td>
+            <td class="px-2 py-3 text-center font-medium text-slate-700 bg-blue-50/30">${a3}</td>
+            <td class="px-2 py-3 text-center font-medium text-slate-700 bg-blue-50/30">${a4}</td>
+            <td class="px-3 py-3 text-center font-bold text-blue-800">${r.totalScore}</td>
+            <td class="px-3 py-3 text-center text-slate-700">${r.percentage}%</td>
+            <td class="px-3 py-3">
+              <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${cat.badgeClass}">
+                ${r.category}
+              </span>
+            </td>
+            <td class="px-3 py-3 text-center">
+              <button type="button" onclick="openDetailModal('${r.docId}')"
+                class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-100 text-slate-700 hover:text-blue-800 font-semibold text-xs transition">
+                Lihat P1–P20
+              </button>
+            </td>
+            <td class="px-3 py-3 text-center">
+              <button type="button" onclick="promptDeleteRow('${r.docId}', '${escapeHtml(r.nama)}')" title="Hapus data ini"
+                class="text-rose-600 hover:text-rose-800 hover:bg-rose-50 p-1.5 rounded-lg transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    };
+
+    window.openDetailModal = function (docId) {
+      const record = responsesList.find((item) => item.docId === docId);
+      if (!record) return;
+
+      document.getElementById("modal-resp-name").textContent = `${record.nama} (${record.nim})`;
+      document.getElementById("modal-resp-meta").textContent = `${record.kelas} • Total Skor: ${record.totalScore}/100 (${record.percentage}% - ${record.category})`;
+
+      const body = document.getElementById("modal-resp-body");
+      body.innerHTML = QUESTIONS.map((q) => {
+        const ans = record.answers?.[`q${q.id}`] || "-";
+        const scr = record.itemScores?.[`s${q.id}`] ?? "-";
+        return `
+          <div class="p-3 rounded-xl border border-slate-200 bg-slate-50/60 flex items-start justify-between gap-3">
+            <div class="flex-1">
+              <span class="font-bold text-blue-800 mr-1">${q.id}.</span>
+              <span class="text-slate-800">${q.text}</span>
+              <span class="block text-[11px] text-slate-500 mt-0.5">${q.aspect} (${q.type === "+" ? "Item Positif" : "Item Negatif"})</span>
+            </div>
+            <div class="text-right shrink-0">
+              <span class="inline-block px-2 py-0.5 rounded bg-blue-100 text-blue-900 font-bold text-xs">${ans}</span>
+              <span class="block text-xs font-semibold text-slate-600 mt-0.5">Skor: ${scr}</span>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      document.getElementById("detail-modal").classList.remove("hidden");
+    };
+
+    window.closeDetailModal = function () {
+      document.getElementById("detail-modal").classList.add("hidden");
+    };
+
+    window.promptDeleteRow = function (docId, nama) {
+      pendingDeleteTarget = docId;
+      document.getElementById("delete-row-text").textContent = `Yakin ingin menghapus data responden atas nama "${nama}"?`;
+      document.getElementById("delete-row-confirm").classList.remove("hidden");
+    };
+
+    window.cancelDeleteRow = function () {
+      pendingDeleteTarget = null;
+      document.getElementById("delete-row-confirm").classList.add("hidden");
+    };
+
+    window.executeDeleteRow = async function () {
+      if (!pendingDeleteTarget) return;
+      const targetId = pendingDeleteTarget;
+      cancelDeleteRow();
+
+      try {
+        if (cloudEnabled && db && currentUser) {
+          const docRef = doc(db, "artifacts", appId, "public", "data", "responden_kepercayaan_diri", targetId);
+          await deleteDoc(docRef);
+        } else {
+          responsesList = responsesList.filter((item) => item.docId !== targetId);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(responsesList));
+          refreshStatsAndTable();
+        }
+        showToast("Data responden berhasil dihapus.");
+      } catch (err) {
+        console.error("Gagal menghapus dokumen:", err);
+        showToast("Terjadi kendala saat menghapus data.");
+      }
+    };
+
+    function buildExportRows() {
+      const itemHeaders = QUESTIONS.map((q) => `P${q.id}(${q.type})`);
+      const choiceHeaders = QUESTIONS.map((q) => `Pilihan_P${q.id}`);
+      const headers = [
+        "No",
+        "Waktu_Isi",
+        "Nama_Mahasiswa",
+        "NIM",
+        "Semester_Kelas",
+        ...itemHeaders,
+        "Aspek1_Keyakinan_Kemampuan_Diri",
+        "Aspek2_Objektif_Bertanggung_Jawab",
+        "Aspek3_Rasional_Realistis",
+        "Aspek4_Keberanian_Berpendapat_Tampil",
+        "Total_Skor",
+        "Persentase",
+        "Kategori",
+        ...choiceHeaders
+      ];
+
+      const rows = responsesList.map((r, idx) => {
+        const scores = QUESTIONS.map((q) => r.itemScores?.[`s${q.id}`] ?? "");
+        const choices = QUESTIONS.map((q) => r.answers?.[`q${q.id}`] ?? "");
+        return [
+          idx + 1,
+          r.timestamp || "",
+          r.nama || "",
+          r.nim || "",
+          r.kelas || "",
+          ...scores,
+          r.aspectScores?.["Keyakinan Kemampuan Diri"] ?? "",
+          r.aspectScores?.["Objektif & Bertanggung Jawab"] ?? "",
+          r.aspectScores?.["Rasional & Realistis"] ?? "",
+          r.aspectScores?.["Keberanian Berpendapat & Tampil"] ?? "",
+          r.totalScore ?? "",
+          `${r.percentage ?? 0}%`,
+          r.category || "",
+          ...choices
+        ];
+      });
+
+      return { headers, rows };
+    }
+
+    window.exportToCSV = function () {
+      if (responsesList.length === 0) {
+        showToast("Belum ada data responden untuk diekspor.");
+        return;
+      }
+
+      const { headers, rows } = buildExportRows();
+      const csvLines = [
+        headers.join(","),
+        ...rows.map((row) =>
+          row.map((val) => `"${String(val).replace(/"/g, '""')}"`).join(",")
+        )
+      ];
+
+      const csvContent = "\uFEFF" + csvLines.join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      const dateStr = new Date().toISOString().slice(0, 10);
+      link.setAttribute("href", url);
+      link.setAttribute("download", `Rekap_Angket_Kepercayaan_Diri_Mahasiswa_${dateStr}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      showToast("File CSV berhasil diunduh!");
+    };
+
+    window.copyTableForExcel = function () {
+      if (responsesList.length === 0) {
+        showToast("Belum ada data responden untuk disalin.");
+        return;
+      }
+
+      const { headers, rows } = buildExportRows();
+      const tsv = [
+        headers.join("\t"),
+        ...rows.map((row) => row.map((v) => String(v).replace(/\t|\n/g, " ")).join("\t"))
+      ].join("\n");
+
+      const textarea = document.createElement("textarea");
+      textarea.value = tsv;
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand("copy");
+        showToast("Data berhasil disalin! Silakan Paste (Ctrl+V) langsung di Excel.");
+      } catch (err) {
+        showToast("Gagal menyalin data ke clipboard.");
+      }
+      document.body.removeChild(textarea);
+    };
+
+    // =========================================================================
+    // 8. NAVIGASI TAB, RESET FORMULIR & UTILITY
+    // =========================================================================
+    window.switchTab = function (tabName) {
+      const formBtn = document.getElementById("tab-form-btn");
+      const rekapBtn = document.getElementById("tab-rekap-btn");
+
+      const viewForm = document.getElementById("view-form");
+      const viewResult = document.getElementById("view-result");
+      const viewRekap = document.getElementById("view-rekap");
+      const progressContainer = document.getElementById("progress-container");
+
+      if (tabName === "form") {
+        formBtn.className = "px-3.5 py-1.5 text-xs sm:text-sm font-semibold rounded-lg bg-white text-blue-800 shadow-sm transition";
+        rekapBtn.className = "px-3.5 py-1.5 text-xs sm:text-sm font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5";
+
+        viewRekap.classList.add("hidden");
+        viewResult.classList.add("hidden");
+        viewForm.classList.remove("hidden");
+        progressContainer.classList.remove("hidden");
+      } else {
+        rekapBtn.className = "px-3.5 py-1.5 text-xs sm:text-sm font-semibold rounded-lg bg-white text-blue-800 shadow-sm transition flex items-center gap-1.5";
+        formBtn.className = "px-3.5 py-1.5 text-xs sm:text-sm font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition";
+
+        viewForm.classList.add("hidden");
+        viewResult.classList.add("hidden");
+        viewRekap.classList.remove("hidden");
+        progressContainer.classList.add("hidden");
+
+        updateResearcherLockUI();
+        if (isResearcherUnlocked) {
+          refreshStatsAndTable();
+        } else {
+          setTimeout(() => document.getElementById("pin-input")?.focus(), 100);
+        }
+      }
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    window.resetCurrentForm = function () {
+      document.getElementById("survey-form").reset();
+      document.getElementById("form-error-banner").classList.add("hidden");
+      document.getElementById("personal-greeting").classList.add("hidden");
+
+      ["nama", "nim", "kelas"].forEach((field) => {
+        document.getElementById(`err-${field}`).classList.add("hidden");
+        document.getElementById(field).classList.remove("border-rose-500");
+      });
+
+      QUESTIONS.forEach((q) => {
+        const card = document.getElementById(`card-q-${q.id}`);
+        const errText = document.getElementById(`err-q-${q.id}`);
+        const checkBadge = document.getElementById(`check-q-${q.id}`);
+        const numBadge = document.getElementById(`badge-num-${q.id}`);
+
+        card.classList.remove("border-rose-400", "bg-rose-50/30", "question-answered");
+        card.classList.add("border-slate-200/90");
+        errText.classList.add("hidden");
+        if (checkBadge) checkBadge.classList.add("hidden");
+        if (numBadge) {
+          numBadge.className = "w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-50 to-violet-50 text-indigo-800 border border-indigo-200 font-extrabold text-xs flex items-center justify-center shrink-0 mt-0.5";
+        }
+      });
+
+      updateProgress();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    window.startNextRespondent = function () {
+      resetCurrentForm();
+      switchTab("form");
+    };
+
+    let toastTimer = null;
+    function showToast(message) {
+      const box = document.getElementById("toast-box");
+      document.getElementById("toast-message").textContent = message;
+      box.classList.remove("hidden");
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        box.classList.add("hidden");
+      }, 3400);
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    // Inisialisasi saat halaman dimuat
+    renderQuestions();
+    updateProgress();
+    initCloudSync();
+  </script>
+</body>
+</html>
